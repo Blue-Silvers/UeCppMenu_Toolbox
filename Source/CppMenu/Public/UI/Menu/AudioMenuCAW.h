@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UI/Menu/BaseCommonActivatableWidget.h"
-#include "SettingsMenuCAW.generated.h"
+#include "AudioMenuCAW.generated.h"
 
 /**
  * 
  */
 UCLASS(Abstract)
-class CPPMENU_API USettingsMenuCAW : public UBaseCommonActivatableWidget
+class CPPMENU_API UAudioMenuCAW : public UBaseCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
