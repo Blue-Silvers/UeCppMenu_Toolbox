@@ -54,4 +54,27 @@ protected:
 
 	/** Returns true if the player should use UMG touch controls */
 	bool ShouldUseTouchControls() const;
+	
+	// Inputs
+protected:
+	TWeakObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSubsystem = nullptr;
+	TWeakObjectPtr<class UEnhancedInputUserSettings> InputUserSettings = nullptr;
+	//End Inputs
+	//
+	//Pause menu
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input");
+	TObjectPtr<class UInputAction> InputActionPause = nullptr;
+
+	UPROPERTY(EditAnywhere, Category = "Pause");
+	FString PauseMenuBackgroundWidgetName = FString();
+	UPROPERTY(EditAnywhere, Category = "Pause");
+	FString PauseMenuActivatableWidgetName = FString();
+
+	TWeakObjectPtr<class UMenuNavigationDataAsset> MenuNavigationDataAsset = nullptr;
+
+protected:
+	void OnPauseInputPress();
+
+	//end of Pause menu
 };

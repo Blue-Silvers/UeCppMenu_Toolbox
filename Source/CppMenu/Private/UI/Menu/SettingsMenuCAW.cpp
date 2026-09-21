@@ -2,6 +2,8 @@
 
 
 #include "UI/Menu/SettingsMenuCAW.h"
+
+#include "Components/WidgetSwitcher.h"
 #include "Ui/MainCommonButtonBase.h"
 
 void USettingsMenuCAW::NativeConstruct()
@@ -29,15 +31,20 @@ void USettingsMenuCAW::NativeConstruct()
 
 void USettingsMenuCAW::OnAudioButtonClicked()
 {
-	AddWidgetFromSubsytem(BIND_Audio_Button->GetName());
+	BIND_Settings_Switcher->SetActiveWidgetIndex(0);
+	//AddWidgetFromSubsytem(BIND_Audio_Button->GetName());
 }
 
 void USettingsMenuCAW::OnGraphicsClicked()
 {
-	AddWidgetFromSubsytem(BIND_Graphics_Button->GetName());
+	BIND_Settings_Switcher->SetActiveWidgetIndex(1);
+
+	//AddWidgetFromSubsytem(BIND_Graphics_Button->GetName());
 }
 
 void USettingsMenuCAW::OnControlsButtonClicked()
 {
-	AddWidgetFromSubsytem(BIND_Controls_Button->GetName());
+	BIND_Settings_Switcher->SetActiveWidgetIndex(2);
+
+	//AddWidgetFromSubsytem(BIND_Controls_Button->GetName());
 }

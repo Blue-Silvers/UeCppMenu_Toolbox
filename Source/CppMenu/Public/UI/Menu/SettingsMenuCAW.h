@@ -33,4 +33,7 @@ protected:
 	TObjectPtr<class UMainCommonButtonBase> BIND_Quit_Button = nullptr;
 
 	//End of Button
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
+	TObjectPtr<class UWidgetSwitcher> BIND_Settings_Switcher = nullptr;
+	//BIND_Settings_Switcher
 };
