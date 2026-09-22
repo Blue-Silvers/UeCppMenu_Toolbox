@@ -19,4 +19,6 @@ public:
 	TMap<FString, TSubclassOf<class UUserWidget>> MenuNavigationMap;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Menu Navigation")
 	TMap<FString, TSubclassOf<class UCommonActivatableWidget>> MenuNavigationWidgetMap;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Menu Navigation")
+	TMap<FString, TSubclassOf<class UCommonActivatableWidget>> MenuNavigationSubWidgetMap;
 };

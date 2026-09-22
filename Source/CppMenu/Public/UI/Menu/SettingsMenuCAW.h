@@ -21,19 +21,18 @@ protected:
 	UFUNCTION()
 	void OnControlsButtonClicked();
 
-
 protected:
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UMainCommonButtonBase> BIND_Audio_Button = nullptr;
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UMainCommonButtonBase> BIND_Graphics_Button = nullptr;
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UMainCommonButtonBase> BIND_Controls_Button = nullptr;
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UMainCommonButtonBase> BIND_Quit_Button = nullptr;
 
 	//End of Button
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
-	TObjectPtr<class UWidgetSwitcher> BIND_Settings_Switcher = nullptr;
-	//BIND_Settings_Switcher
+	TObjectPtr<class UCommonActivatableWidgetStack> BIND_CommonActivatableWidgetStack = nullptr;
+	//BIND_CommonActivatableWidgetStack
 };

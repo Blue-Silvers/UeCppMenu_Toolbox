@@ -75,6 +75,12 @@ void UBaseCommonActivatableWidget::CloseActivatableWidget()
 	{
 		BaseMenuCommonUserWidget->RemoveWidgetFromStack(*this);
 	}
+
+		if (PreviousCommonUserWidget.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("FOCUUUUUUUUUUS"));
+			PreviousCommonUserWidget->GetDesiredFocusWidget()->SetFocus();
+		}
 }
 
 void UBaseCommonActivatableWidget::SetBaseMenuCommonUserWidget(UBaseMenuCommonUserWidget* InBaseMenuCommonUserWidget)
@@ -86,3 +92,6 @@ void UBaseCommonActivatableWidget::SetPreviousCommonUserWidget(UCommonActivatabl
 {
 	PreviousCommonUserWidget = InBaseMenuCommonUserWidget;
 }
+
+
+

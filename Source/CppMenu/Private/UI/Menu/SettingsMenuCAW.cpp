@@ -3,8 +3,11 @@
 
 #include "UI/Menu/SettingsMenuCAW.h"
 
-#include "Components/WidgetSwitcher.h"
+#include "GameFramework/PlayerController.h"
+#include "Ui/Menu/BaseCommonActivatableWidget.h"
 #include "Ui/MainCommonButtonBase.h"
+#include "UI/MenuNavigationDataAsset.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
 
 void USettingsMenuCAW::NativeConstruct()
 {
@@ -26,25 +29,41 @@ void USettingsMenuCAW::NativeConstruct()
 	if (BIND_Quit_Button)
 	{
 		BIND_Quit_Button->OnButtonClicked.AddUniqueDynamic(this, &USettingsMenuCAW::CloseMenu);
+		//USettingsMenuCAW::CloseMenu();
 	}
 }
 
 void USettingsMenuCAW::OnAudioButtonClicked()
 {
-	BIND_Settings_Switcher->SetActiveWidgetIndex(0);
-	//AddWidgetFromSubsytem(BIND_Audio_Button->GetName());
+	//BIND_Settings_Switcher->SetActiveWidgetIndex(0);
+	TSubclassOf <UCommonActivatableWidget> DesireWidget = *MenuNavigationDataAsset->MenuNavigationSubWidgetMap.Find(BIND_Audio_Button->GetName());
+	if(DesireWidget)
+	{
+		BIND_CommonActivatableWidgetStack->AddWidget(DesireWidget);
+		//BIND_CommonActivatableWidgetStack->SetFocus();
+	}
 }
 
 void USettingsMenuCAW::OnGraphicsClicked()
 {
-	BIND_Settings_Switcher->SetActiveWidgetIndex(1);
+	//BIND_Settings_Switcher->SetActiveWidgetIndex(1);
+	TSubclassOf <UCommonActivatableWidget> DesireWidget = *MenuNavigationDataAsset->MenuNavigationSubWidgetMap.Find(BIND_Graphics_Button->GetName());
+	if(DesireWidget)
+	{
+		BIND_CommonActivatableWidgetStack->AddWidget(DesireWidget);
+		//BIND_CommonActivatableWidgetStack->SetFocus();
 
-	//AddWidgetFromSubsytem(BIND_Graphics_Button->GetName());
+	}
 }
 
 void USettingsMenuCAW::OnControlsButtonClicked()
 {
-	BIND_Settings_Switcher->SetActiveWidgetIndex(2);
-
-	//AddWidgetFromSubsytem(BIND_Controls_Button->GetName());
+	//BIND_Settings_Switcher->SetActiveWidgetIndex(2);
+	TSubclassOf <UCommonActivatableWidget> DesireWidget = *MenuNavigationDataAsset->MenuNavigationSubWidgetMap.Find(BIND_Controls_Button->GetName());
+	if(DesireWidget)
+	{
+		BIND_CommonActivatableWidgetStack->AddWidget(DesireWidget);
+		//BIND_CommonActivatableWidgetStack->SetFocus();
+	}
+	
 }
