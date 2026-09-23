@@ -69,3 +69,8 @@ void UKeyMappingCAW::OnResetKeyMapping()
 		//PlayerController->ResetKey(InputName, DisplayKey, this);
 	}
 }
+
+FText UKeyMappingCAW::GetKeyName_Implementation() const
+{
+	return KeyName;
+}

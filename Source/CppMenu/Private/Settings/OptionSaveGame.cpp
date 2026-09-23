@@ -22,3 +22,33 @@ float UOptionSaveGame::GetMouseSensitivityY() const
 {
 	return MouseSensitivityY;
 }
+
+void UOptionSaveGame::SetGeneralVolume(float NewVolume)
+{
+	GeneralVolume = NewVolume;
+}
+
+void UOptionSaveGame::SetMusicVolume(float NewVolume)
+{
+	MusicVolume = NewVolume;
+}
+
+void UOptionSaveGame::SetSoundVolume(float NewVolume)
+{
+	SoundVolume = NewVolume;
+}
+
+float UOptionSaveGame::GetGeneralVolume() const
+{
+	return GeneralVolume; 
+}
+
+float UOptionSaveGame::GetMusicVolume() const
+{
+	return MusicVolume; 
+}
+
+float UOptionSaveGame::GetSoundVolume() const
+{
+	return SoundVolume;
+}

@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
-#include "EnhancedActionKeyMapping.h"
+#include "EnhancedActionKeyMapping.h"/**/
+#include "UI/RebindKeyInterface.h"
 #include "KeyMappingCAW.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
-class CPPMENU_API UKeyMappingCAW : public UCommonActivatableWidget
+class CPPMENU_API UKeyMappingCAW : public UCommonActivatableWidget, public IRebindKeyInterface
 {
 	GENERATED_BODY()
 
@@ -37,10 +36,13 @@ protected:
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<class UInputKeySelector> BIND_InputSelector = nullptr;
 	FName InputName;
+	FText KeyName;
 
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<class UTextBlock> BIND_InputDisplayName_Text = nullptr;
 	FEnhancedActionKeyMapping DisplayKey;
 
 	//End of Keybinding
+	virtual FText GetKeyName_Implementation() const override;
+
 };

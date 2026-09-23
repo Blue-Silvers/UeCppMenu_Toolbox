@@ -3,13 +3,37 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
+#include "Ui/Menu/KeyMappingCAW.h"
+#include "KeyMappingCategoryCAW.generated.h"
 
-/**
- * 
- */
-class CPPMENU_API KeyMappingCategoryCAW
+UCLASS()
+class CPPMENU_API UKeyMappingCategoryCAW : public UCommonActivatableWidget
 {
-public:
-	KeyMappingCategoryCAW();
-	~KeyMappingCategoryCAW();
+	GENERATED_BODY()
+	
+protected:
+	UKeyMappingCategoryCAW(FText pKeyCategoryName, UWidget* pLastWidgetNav);
+	virtual void NativeConstruct() override;
+	
+	void AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping);
+	void CanAddNewKeyMapping();
+	void InputRebinderAlreadyHere();
+	
+protected:
+	//Binding
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UVerticalBox> BIND_RebindInputCategory_VB = nullptr;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UVerticalBox> BIND_InputList_VB = nullptr;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UCommonTextBlock> BIND_Category_Text = nullptr;
+	//End of Binding
+
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	FText KeyCategoryName = FText();
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	UWidget* LastWidgetNav = nullptr;
+	
+	bool bGateOpen = false;
 };
