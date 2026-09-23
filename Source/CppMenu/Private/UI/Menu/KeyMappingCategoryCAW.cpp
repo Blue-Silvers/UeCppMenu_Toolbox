@@ -6,11 +6,22 @@
 #include "UI/RebindKeyInterface.h"
 #include "Components/VerticalBox.h"
 
-UKeyMappingCategoryCAW::UKeyMappingCategoryCAW(FText pKeyCategoryName, UWidget* pLastWidgetNav)
+UKeyMappingCategoryCAW::UKeyMappingCategoryCAW()
+{
+	// UKeyMappingCategoryCAW* CategoryWidget = CreateWidget<UKeyMappingCategoryCAW>(this, CategoryWidgetClass);
+	//
+	// if (CategoryWidget)
+	// {
+	// 	CategoryWidget->InitKeyMappingCategory(CategoryName, LastWidget);
+	// }
+}
+
+void UKeyMappingCategoryCAW::InitKeyMappingCategory(FText pKeyCategoryName, UWidget* pLastWidgetNav)
 {
 	KeyCategoryName = pKeyCategoryName;
 	LastWidgetNav = pLastWidgetNav;
 }
+
 
 void UKeyMappingCategoryCAW::NativeConstruct()
 {

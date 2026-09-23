@@ -4,45 +4,67 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
-#include "EnhancedActionKeyMapping.h"/**/
 #include "UI/RebindKeyInterface.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 #include "KeyMappingCAW.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FUpdateKeyBindSignature);
 
 UCLASS()
 class CPPMENU_API UKeyMappingCAW : public UCommonActivatableWidget, public IRebindKeyInterface
 {
 	GENERATED_BODY()
 
+public:
+	void InitKeyMapping(FText pKeyName, FPlayerKeyMapping pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings);
+	
 protected:
 	virtual void NativeConstruct() override;
 
-	//Keybinding
-public:
-	void SetInputName(FName InName);
-	void SetInputDisplayName(FText InName);
-	void SetInputSelector(FEnhancedActionKeyMapping& GivenKey);
+//Keybinding
+protected:
+	UFUNCTION(Blueprintable)
+	virtual void UpdateKey( FKey pNewKey);
+	FKey MultidirectionInputFunction( FKey pTempKey);
+	void OnKeySelected(FInputChord pKey);
+	void ApplyNewKey();
 
 protected:
-	UFUNCTION()
-	void OnKeySelected(struct FInputChord SelectedKey);
-	UFUNCTION()
-	void OnResetKeyMapping();
-
-protected:
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<class UMainCommonButtonBase> BIND_Reset_Button = nullptr;
-
+	//Binding
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<class UInputKeySelector> BIND_InputSelector = nullptr;
-	FName InputName;
-	FText KeyName;
-
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<class UTextBlock> BIND_InputDisplayName_Text = nullptr;
-	FEnhancedActionKeyMapping DisplayKey;
-
-	//End of Keybinding
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UImage> BIND_KeyPicture_Image = nullptr;
+	//End of Binding
+	
+	//Initialize variables
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	FText KeyName;
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	FPlayerKeyMapping Key;
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	bool RebindGamepadKey = false;
+	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	UEnhancedInputUserSettings* UserSettings;
+	//End of Initialize variables
+	
+	//Other variables
+	FKey newKey;
+	int iSameKeyCount = 0;
+	bool bMultidirectionalInput = false;
+	//End of Other variables
+	
+//End of Keybinding
+	
+	//IRebindKeyInterface
+public:
 	virtual FText GetKeyName_Implementation() const override;
-
+	virtual void ResetKey_Implementation() override;
+	virtual void UpdateAllKey_Implementation(const TArray<FKey>& AllKey) override;
+	virtual UInputKeySelector* GetKeySelector_Implementation() override;
+	//End of IRebindKeyInterface
+	
+	FUpdateKeyBindSignature OnUpdateKeyBindSignature;
 };

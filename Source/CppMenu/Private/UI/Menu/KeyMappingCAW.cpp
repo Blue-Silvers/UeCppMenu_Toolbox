@@ -2,75 +2,137 @@
 
 
 #include "Ui/Menu/KeyMappingCAW.h"
-#include "Components/TextBlock.h"
 #include "Framework/Commands/InputChord.h"
 #include "Components/InputKeySelector.h"
 #include "Ui/MainCommonButtonBase.h"
-
-//Controller
-#include "CppMenuPlayerController.h"
+#include "Styling/SlateTypes.h"
+#include "Styling/SlateColor.h"
 
 //Setrtings
-#include "Kismet/Gameplaystatics.h"
+#include "Components/Image.h"
+
+void UKeyMappingCAW::InitKeyMapping(FText pKeyName, FPlayerKeyMapping pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings)
+{
+	KeyName = pKeyName;
+	Key = pKey;
+	RebindGamepadKey = pRebindGamepadKey;
+	UserSettings = pUserSettings;
+}
 
 void UKeyMappingCAW::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	if (BIND_Reset_Button)
-	{
-		BIND_Reset_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingCAW::OnResetKeyMapping);
-	}
-	//Bind key selctor
+	
+	//Bind key selector
 	if (BIND_InputSelector)
 	{
 		BIND_InputSelector->OnKeySelected.AddUniqueDynamic(this, &UKeyMappingCAW::OnKeySelected);
 	}
-}
-
-void UKeyMappingCAW::SetInputName(FName InName)
-{
-	InputName = InName;
-}
-
-void UKeyMappingCAW::SetInputDisplayName(FText InName)
-{
-	if (BIND_InputDisplayName_Text)
+	
+	UpdateKey(Key.GetCurrentKey());
+	BIND_InputSelector->SetAllowGamepadKeys(RebindGamepadKey);
+	if (Key.GetAssociatedInputAction())
 	{
-		BIND_InputDisplayName_Text->SetText(InName);
+		bMultidirectionalInput = Key.GetAssociatedInputAction()->ValueType == EInputActionValueType::Axis2D;
 	}
 }
 
-void UKeyMappingCAW::SetInputSelector(FEnhancedActionKeyMapping& GivenKey)
+void UKeyMappingCAW::UpdateKey(FKey pNewKey)
 {
-	if (BIND_InputSelector)
-	{
-		BIND_InputSelector->SetSelectedKey(GivenKey.Key);
-		DisplayKey = GivenKey;
-	}
+	FInputChord newChord = pNewKey;
+	BIND_InputSelector->SetSelectedKey(newChord);
 }
+
+FKey UKeyMappingCAW::MultidirectionInputFunction(FKey pTempKey)
+{
+	if (RebindGamepadKey && pTempKey == FKey(EKeys::LeftMouseButton))
+	{
+		return FKey(EKeys::Gamepad_FaceButton_Bottom);
+	}
+	if (bMultidirectionalInput)
+	{
+		if (pTempKey == FKey(EKeys::Gamepad_LeftStick_Up) ||
+			pTempKey == FKey(EKeys::Gamepad_LeftStick_Down) ||
+			pTempKey == FKey(EKeys::Gamepad_LeftStick_Left) ||
+			pTempKey == FKey(EKeys::Gamepad_LeftStick_Right) ||
+			pTempKey == FKey(EKeys::Gamepad_RightStick_Up) ||
+			pTempKey == FKey(EKeys::Gamepad_RightStick_Down) ||
+			pTempKey == FKey(EKeys::Gamepad_RightStick_Left) ||
+			pTempKey == FKey(EKeys::Gamepad_RightStick_Right))
+		{
+			return pTempKey == FKey(EKeys::Gamepad_LeftStick_Up) || 
+					pTempKey == FKey(EKeys::Gamepad_LeftStick_Down) || 
+					pTempKey == FKey(EKeys::Gamepad_LeftStick_Left) || 
+					pTempKey == FKey(EKeys::Gamepad_LeftStick_Right) 
+					? FKey(EKeys::Gamepad_Left2D) : FKey(EKeys::Gamepad_Right2D);
+		}
+	}
+	return pTempKey;
+}
+
 
 void UKeyMappingCAW::OnKeySelected(FInputChord SelectedKey)
 {
-	//Send Selected key to the player controller
-	ACppMenuPlayerController* PlayerController = Cast<ACppMenuPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PlayerController)
+	FKey verifiedKey = MultidirectionInputFunction(SelectedKey.Key);
+	if (RebindGamepadKey && verifiedKey.GetDisplayName().ToString().Contains(TEXT("Gamepad")))
 	{
-		//PlayerController->OnUpdateMappableKey(InputName, SelectedKey.Key);
+		newKey = verifiedKey;
+	}
+	else
+	{
+		UpdateKey(Key.GetCurrentKey());
 	}
 }
 
-void UKeyMappingCAW::OnResetKeyMapping()
+void UKeyMappingCAW::ApplyNewKey()
 {
-	//Send reset key to the player controller
-	ACppMenuPlayerController* PlayerController = Cast<ACppMenuPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
-	if (PlayerController)
-	{
-		//PlayerController->ResetKey(InputName, DisplayKey, this);
-	}
+	UpdateKey(newKey);
+	FMapPlayerKeyArgs KeyArgs;
+	KeyArgs.MappingName = Key.GetMappingName();
+	KeyArgs.NewKey = newKey;
+	FGameplayTagContainer FailureReason;
+	UserSettings->MapPlayerKey(KeyArgs, FailureReason);
+	UserSettings->ApplySettings();
+	UserSettings->SaveSettings();
+	OnUpdateKeyBindSignature.Broadcast();
 }
+
 
 FText UKeyMappingCAW::GetKeyName_Implementation() const
 {
 	return KeyName;
+}
+
+void UKeyMappingCAW::ResetKey_Implementation()
+{
+	newKey = Key.GetDefaultKey();
+	ApplyNewKey();
+}
+
+void UKeyMappingCAW::UpdateAllKey_Implementation(const TArray<FKey>& AllKey)
+{
+	iSameKeyCount = 0;
+	for (FKey eachKey : AllKey)
+	{
+		if (eachKey == Key.GetCurrentKey())
+		{
+			++iSameKeyCount;
+		}
+	}
+	
+	FTextBlockStyle blockStyle;
+	FLinearColor newColorAndOpacity = iSameKeyCount > 1 ? FLinearColor(1,0,0,blockStyle.ColorAndOpacity.GetSpecifiedColor().A) : FLinearColor(1,1,1,blockStyle.ColorAndOpacity.GetSpecifiedColor().A);
+	blockStyle = BIND_InputSelector->GetTextStyle();
+	blockStyle.Font.OutlineSettings.OutlineColor.A = blockStyle.ColorAndOpacity.GetSpecifiedColor().A;
+	blockStyle.ColorAndOpacity = newColorAndOpacity;
+	BIND_InputSelector->SetTextStyle(blockStyle);
+	
+	FSlateBrush brush = BIND_KeyPicture_Image->GetBrush();
+	brush.TintColor = iSameKeyCount > 1 ? FLinearColor::Red : FLinearColor::White;
+	BIND_KeyPicture_Image->SetBrush(brush);
+}
+
+UInputKeySelector* UKeyMappingCAW::GetKeySelector_Implementation()
+{
+	return BIND_InputSelector;
 }

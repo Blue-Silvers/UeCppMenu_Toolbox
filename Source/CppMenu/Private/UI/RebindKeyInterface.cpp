@@ -2,22 +2,4 @@
 
 
 #include "UI/RebindKeyInterface.h"
-#include "Components/InputKeySelector.h"
 
-FText IRebindKeyInterface::GetKeyName()
-{
-	return FText::GetEmpty();
-}
-
-void IRebindKeyInterface::ResetKey()
-{
-}
-
-void IRebindKeyInterface::UpdateAllKey(TArray<FKey> allKey)
-{
-}
-
-UInputKeySelector* IRebindKeyInterface::GetKeySelector()
-{
-	return nullptr;
-}

@@ -12,8 +12,11 @@ class CPPMENU_API UKeyMappingCategoryCAW : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
 	
+public:
+	UKeyMappingCategoryCAW();
+	void InitKeyMappingCategory(FText pKeyCategoryName, UWidget* pLastWidgetNav);
+
 protected:
-	UKeyMappingCategoryCAW(FText pKeyCategoryName, UWidget* pLastWidgetNav);
 	virtual void NativeConstruct() override;
 	
 	void AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping);

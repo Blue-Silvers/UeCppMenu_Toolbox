@@ -70,33 +70,7 @@ void UKeyMappingMenuCAW::DisplayKeys()
 	//For all mappable keys
 	for (FEnhancedActionKeyMapping& Key : MappableKeys)
 	{
-		//Get Name and Display name
-		FName KeyName = Key.GetMappingName();
-		FText KeyDisplayName = Key.GetDisplayName();
-
-		//Create KeyMappingCAW
-		UKeyMappingCAW* NewKeyWidget = CreateWidget<UKeyMappingCAW>(this, KeybindingWidgetTemplate);
-		if (NewKeyWidget)
-		{
-			NewKeyWidget->SetInputName(KeyName);
-			NewKeyWidget->SetInputDisplayName(KeyDisplayName);
-			NewKeyWidget->SetInputSelector(Key);
-
-			//Add the widget in vertical box
-			const FString KeyCategory = Key.GetDisplayCategory().ToString();
-			if (KeyCategory == MovementCategoryName)
-			{
-				BIND_KeyMappingsMovement_VB->AddChild(NewKeyWidget);
-			}
-			else if (KeyCategory == ActionCategoryName)
-			{
-				BIND_KeyMappingsAction_VB->AddChild(NewKeyWidget);
-			}
-			else
-			{
-				NewKeyWidget->Destruct();
-			}
-		}
-	}
+		//WIP
+	}		
 }
 
