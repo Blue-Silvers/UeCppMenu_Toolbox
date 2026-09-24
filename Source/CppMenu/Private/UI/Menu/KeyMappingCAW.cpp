@@ -136,3 +136,8 @@ UInputKeySelector* UKeyMappingCAW::GetKeySelector_Implementation()
 {
 	return BIND_InputSelector;
 }
+
+UKeyMappingCAW* UKeyMappingCAW::GetKeyMappingWidget_Implementation()
+{
+	return this;
+}

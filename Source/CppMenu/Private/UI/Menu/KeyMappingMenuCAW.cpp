@@ -4,15 +4,15 @@
 #include "UI/Menu/KeyMappingMenuCAW.h"
 #include "Ui/MainCommonButtonBase.h"
 #include "Ui/Menu/KeyMappingCAW.h"
-#include "Ui/MenuNavigationDataAsset.h"
-#include "Components/TextBlock.h"
-#include "Components/VerticalBox.h"
-
-//Controller
-#include "CppMenuPlayerController.h"
 
 //Input
+#include "CommonAnimatedSwitcher.h"
+#include "CommonHierarchicalScrollBox.h"
 #include "EnhancedInputSubsystems.h"
+#include "UI/Menu/KeyMappingCategoryCAW.h"
+#include "UI/RebindKeyInterface.h"
+#include "CoreTypes.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 
 void UKeyMappingMenuCAW::NativeConstruct()
 {
@@ -20,57 +20,173 @@ void UKeyMappingMenuCAW::NativeConstruct()
 
 
 	//Bind button
-	if (BIND_ExistMenu_Button)
+	if (BIND_KeyboardPage_Button)
 	{
-		BIND_ExistMenu_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingMenuCAW::CloseMenu);
+		BIND_KeyboardPage_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingMenuCAW::OnKeyboardPageButtonClicked);
+	}
+	if (BIND_GamepadPage_Button)
+	{
+		BIND_GamepadPage_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingMenuCAW::OnGamepadPageButtonClicked);
+	}
+	if (BIND_ResetAllControls_Button)
+	{
+		BIND_ResetAllControls_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingMenuCAW::OnResetAllControlsClicked);
 	}
 
+	APlayerController* localPlayerController = GetOwningPlayer();
+	if (!localPlayerController)
+	{
+		return;
+	}
+
+	ULocalPlayer* localPlayer = localPlayerController->GetLocalPlayer();
+	if (!localPlayer)
+	{
+		return;
+	}
+
+	UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem =
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(localPlayer);
+
+	if (!EnhancedInputSubsystem)
+	{
+		return;
+	}
+
+	InputUserSettings = EnhancedInputSubsystem->GetUserSettings();
 	//Display mappable Key
-	DisplayKeys();
+	OnKeyboardPageButtonClicked();
 }
 
-void UKeyMappingMenuCAW::DisplayKeys()
+void UKeyMappingMenuCAW::OnResetAllControlsClicked()
 {
-	/*Player controller*/
-	if (!BIND_KeyMappingsMovement_VB || !BIND_KeyMappingsAction_VB || KeyMappingWidgetName.IsEmpty() || !PlayerController.IsValid())
+	for (UKeyMappingCAW* eachKey : InputList)
 	{
-		return;
+		if (eachKey->Implements<URebindKeyInterface>())
+		{
+			IRebindKeyInterface::Execute_ResetKey(eachKey);
+		}
 	}
-
-	if (BIND_KeyMappingsMovement_VB->GetChildrenCount() != 1)
-	{
-		return;
-	}
-
-	if (BIND_KeyMappingsAction_VB->GetChildrenCount() != 1)
-	{
-		return;
-	}
-	/*Player controller*/
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	if (!InputSubsystem)
-	{
-		return;
-	}
-
-	//Get Widget template
-	TSubclassOf<UCommonActivatableWidget> KeybindingWidgetTemplate = *MenuNavigationDataAsset->MenuNavigationWidgetMap.Find(KeyMappingWidgetName);
-	if (!KeybindingWidgetTemplate)
-	{
-		return;
-	}
-
-	//Get all mappable keys
-	TArray<FEnhancedActionKeyMapping> MappableKeys = InputSubsystem->GetAllPlayerMappableActionKeyMappings();
-	if (MappableKeys.IsEmpty())
-	{
-		return;
-	}
-
-	//For all mappable keys
-	for (FEnhancedActionKeyMapping& Key : MappableKeys)
-	{
-		//WIP
-	}		
 }
+
+void UKeyMappingMenuCAW::OnKeyboardPageButtonClicked()
+{
+	FindKeys(false);
+	BIND_KeyMappingContainer_Switcher->SetActiveWidgetIndex(0);
+}
+
+void UKeyMappingMenuCAW::OnGamepadPageButtonClicked()
+{
+	FindKeys(true);
+	BIND_KeyMappingContainer_Switcher->SetActiveWidgetIndex(1);
+}
+
+void UKeyMappingMenuCAW::FindKeys(bool bIsGamepad)
+{
+	CleanInput(bIsGamepad);
+	if (InputUserSettings)
+	{
+		bRebindGamepad = bIsGamepad;
+		TArray<FKeyMappingRow> keyMappingRows;
+		InputUserSettings->GetActiveKeyProfile()->GetPlayerMappingRows().GenerateValueArray(keyMappingRows);
+		for (FKeyMappingRow eachKeyMappingRow : keyMappingRows)
+		{
+			for (FPlayerKeyMapping eachKeyMapping : eachKeyMappingRow.Mappings.Array())
+			{
+				if (eachKeyMapping.GetSlot() == EPlayerMappableKeySlot::First)
+				{
+					if (eachKeyMapping.GetDefaultKey().GetDisplayName().ToString().Contains(TEXT("Gamepad")))
+					{
+						AllKeysGamepadMap.Add(eachKeyMapping.GetAssociatedInputAction(), eachKeyMapping);
+						AllKeys.Add(eachKeyMapping.GetCurrentKey());
+					}
+					else
+					{
+						AllKeysKeyboardMap.Add(eachKeyMapping.GetAssociatedInputAction(), eachKeyMapping);
+						AllKeys.Add(eachKeyMapping.GetCurrentKey());
+					}
+				}
+			}
+			AddKeyToScrollBox();
+		}
+		CheckSimilarKey();
+	}
+}
+
+void UKeyMappingMenuCAW::CleanInput(bool bIsGamepad)
+{
+	if (bIsGamepad)
+	{
+		BIND_Gamepad_SB->ClearChildren();
+	}
+	else
+	{
+		BIND_Keyboard_SB->ClearChildren();
+	}
+	AllKeysGamepadMap.Empty();
+	AllKeysKeyboardMap.Empty();
+	AllKeys.Empty();
+	CategoryMap.Empty();
+	InputList.Empty();
+}
+
+void UKeyMappingMenuCAW::CheckSimilarKey()
+{
+	for (UKeyMappingCAW* eachKey : InputList)
+	{
+		if (eachKey->Implements<URebindKeyInterface>())
+		{
+			IRebindKeyInterface::Execute_UpdateAllKey(eachKey, AllKeys);
+		}
+	}
+}
+
+void UKeyMappingMenuCAW::AddKeyToScrollBox()
+{
+	AllKeysFounded.Empty();
+	TArray<const UInputAction*> keyMappingInputAction;
+	bRebindGamepad ? AllKeysGamepadMap.GetKeys(keyMappingInputAction) : AllKeysKeyboardMap.GetKeys(keyMappingInputAction);
+	for (const UInputAction* eachKey : keyMappingInputAction)
+	{
+		if (bRebindGamepad ? AllKeysGamepadMap.Find(eachKey) : AllKeysGamepadMap.Find(eachKey))
+		{
+			AllKeysFounded.Add(bRebindGamepad ? AllKeysGamepadMap.Find(eachKey) : AllKeysKeyboardMap.Find(eachKey));
+		}
+	}
+	for (FPlayerKeyMapping* keyFounded : AllKeysFounded)
+	{
+		UWidget* newInputWidget = CreateWidget(GetOwningPlayer(), WidgetCategory);
+		if (newInputWidget->Implements<URebindKeyInterface>())
+		{
+			UKeyMappingCAW* newInputWidgetRef = IRebindKeyInterface::Execute_GetKeyMappingWidget(newInputWidget);
+			newInputWidgetRef->InitKeyMapping(FText::FromString((keyFounded->GetMappingName().ToString()
+																			.Replace(TEXT("Kb"), TEXT("")))
+																			.Replace(TEXT("Gp"), TEXT(""))), 
+																			*keyFounded, bRebindGamepad, InputUserSettings);
+			if (!CategoryMap.Find(keyFounded->GetDisplayCategory().ToString()))
+			{
+				UKeyMappingCategoryCAW* newCategoryWidget = Cast<UKeyMappingCategoryCAW>(CreateWidget(GetOwningPlayer(), WidgetCategory));
+				newCategoryWidget->InitKeyMappingCategory(keyFounded->GetDisplayCategory(), Controls_Button);
+				CategoryMap.Add(keyFounded->GetDisplayCategory().ToString(), newCategoryWidget);
+				bRebindGamepad ? BIND_Gamepad_SB->AddChild(newCategoryWidget) : BIND_Keyboard_SB->AddChild(newCategoryWidget);
+				if (bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[BIND_Gamepad_SB->GetAllChildren().Find(newCategoryWidget)-1] : 
+									BIND_Keyboard_SB->GetAllChildren()[BIND_Keyboard_SB->GetAllChildren().Find(newCategoryWidget)-1])
+				{
+					newCategoryWidget->SetLastWidget(bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[BIND_Gamepad_SB->GetAllChildren().Find(newCategoryWidget)-1] : 
+																		BIND_Keyboard_SB->GetAllChildren()[BIND_Keyboard_SB->GetAllChildren().Find(newCategoryWidget)-1]);
+				}
+			}
+			UKeyMappingCategoryCAW** tempCategoryWidget = CategoryMap.Find(keyFounded->GetDisplayCategory().ToString());
+			(*tempCategoryWidget)->AddNewKeyMapping(newInputWidgetRef);
+			InputList.Add(newInputWidgetRef);
+			newInputWidgetRef->OnUpdateKeyBindSignature.AddUObject(this, &UKeyMappingMenuCAW::ReloadKeyMapping);
+		}
+	}
+}
+
+void UKeyMappingMenuCAW::ReloadKeyMapping()
+{
+	FindKeys(bRebindGamepad);
+}
+
 

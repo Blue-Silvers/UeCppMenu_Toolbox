@@ -13,13 +13,13 @@ class CPPMENU_API UKeyMappingCategoryCAW : public UCommonActivatableWidget
 	GENERATED_BODY()
 	
 public:
-	UKeyMappingCategoryCAW();
 	void InitKeyMappingCategory(FText pKeyCategoryName, UWidget* pLastWidgetNav);
-
+	void AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping);
+	void SetLastWidget(UWidget* pLastWidget);
+	
 protected:
 	virtual void NativeConstruct() override;
-	
-	void AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping);
+
 	void CanAddNewKeyMapping();
 	void InputRebinderAlreadyHere();
 	
@@ -33,10 +33,14 @@ protected:
 	TObjectPtr<class UCommonTextBlock> BIND_Category_Text = nullptr;
 	//End of Binding
 
+	//Initialize variables
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
 	FText KeyCategoryName = FText();
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
 	UWidget* LastWidgetNav = nullptr;
+	//End of Initialize variables
 	
+	//Other variables
 	bool bGateOpen = false;
+	//End of Other variables
 };

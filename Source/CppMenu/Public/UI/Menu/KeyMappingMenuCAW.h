@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Ui/Menu/BaseCommonActivatableWidget.h"
+#include "CoreTypes.h"
 #include "KeyMappingMenuCAW.generated.h"
 
-/**
- * 
- */
 UCLASS(Abstract)
 class CPPMENU_API UKeyMappingMenuCAW : public UBaseCommonActivatableWidget
 {
@@ -17,30 +15,61 @@ class CPPMENU_API UKeyMappingMenuCAW : public UBaseCommonActivatableWidget
 protected:
 	virtual void NativeConstruct() override;
 
-	//Button
+
+//Key Mappings
+protected:	
+	//Button functions
+	UFUNCTION()
+	void OnResetAllControlsClicked();
+	UFUNCTION()
+	void OnKeyboardPageButtonClicked();
+	UFUNCTION()
+	void OnGamepadPageButtonClicked();
+	//End of Button functions
+	
+	//Populate scrollbox functions
+	void FindKeys(bool bIsGamepad);
+	void CleanInput(bool bIsGamepad);
+	void CheckSimilarKey();
+	void AddKeyToScrollBox();
+	void ReloadKeyMapping();
+	//End of Populate scrollbox functions
+
+	
+
 protected:
+	//Binding
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<class UMainCommonButtonBase> BIND_ExistMenu_Button = nullptr;
-
-	//End of Button
-
-
-	//Key Mappings
-protected:
-	void DisplayKeys();
-
-protected:
+	TObjectPtr<class UMainCommonButtonBase> BIND_KeyboardPage_Button = nullptr;
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<class UVerticalBox> BIND_KeyMappingsMovement_VB = nullptr;
+	TObjectPtr<class UMainCommonButtonBase> BIND_GamepadPage_Button = nullptr;
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<class UVerticalBox> BIND_KeyMappingsAction_VB = nullptr;
-	UPROPERTY(EditAnywhere, Category = "Key Mapping User Widget")
-	FString KeyMappingWidgetName = FString();
-
-	UPROPERTY(EditAnywhere, Category = "Key Mapping User Widget")
-	FString MovementCategoryName = "Movement";
-	UPROPERTY(EditAnywhere, Category = "Key Mapping User Widget")
-	FString ActionCategoryName = "Action";
-
-	//End of Key Mappings
+	TObjectPtr<class UMainCommonButtonBase> BIND_ResetAllControls_Button = nullptr;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UCommonAnimatedSwitcher> BIND_KeyMappingContainer_Switcher = nullptr;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UCommonHierarchicalScrollBox> BIND_Keyboard_SB = nullptr;
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UCommonHierarchicalScrollBox> BIND_Gamepad_SB = nullptr;
+	//End of Binding
+	
+	//Other variables
+	UEnhancedInputUserSettings* InputUserSettings = nullptr;
+	TArray<UKeyMappingCAW*> InputList;
+	TMap<FString, UKeyMappingCategoryCAW*> CategoryMap;
+	TMap<const UInputAction*, FPlayerKeyMapping> AllKeysKeyboardMap;
+	TMap<const UInputAction*, FPlayerKeyMapping> AllKeysGamepadMap;
+	TArray<FKey> AllKeys;
+	TArray<FPlayerKeyMapping*> AllKeysFounded;
+	bool bRebindGamepad = false;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
+	TSubclassOf<class UKeyMappingCategoryCAW> WidgetCategory = nullptr;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
+	TSubclassOf<class UKeyMappingCAW> WidgetKey = nullptr;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
+	UMainCommonButtonBase* Controls_Button = nullptr;
+	//End of Other variables
+	
+	
+//End of Key Mappings
 };

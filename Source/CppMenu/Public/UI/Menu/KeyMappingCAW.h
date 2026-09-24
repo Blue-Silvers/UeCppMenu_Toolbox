@@ -26,6 +26,7 @@ protected:
 	UFUNCTION(Blueprintable)
 	virtual void UpdateKey( FKey pNewKey);
 	FKey MultidirectionInputFunction( FKey pTempKey);
+	UFUNCTION()
 	void OnKeySelected(FInputChord pKey);
 	void ApplyNewKey();
 
@@ -64,7 +65,10 @@ public:
 	virtual void ResetKey_Implementation() override;
 	virtual void UpdateAllKey_Implementation(const TArray<FKey>& AllKey) override;
 	virtual UInputKeySelector* GetKeySelector_Implementation() override;
+	virtual UKeyMappingCAW* GetKeyMappingWidget_Implementation() override;
 	//End of IRebindKeyInterface
 	
+	//Event dispatchers
 	FUpdateKeyBindSignature OnUpdateKeyBindSignature;
+	//End of Event dispatchers
 };

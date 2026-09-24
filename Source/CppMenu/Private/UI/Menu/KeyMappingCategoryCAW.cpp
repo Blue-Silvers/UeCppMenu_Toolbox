@@ -6,20 +6,18 @@
 #include "UI/RebindKeyInterface.h"
 #include "Components/VerticalBox.h"
 
-UKeyMappingCategoryCAW::UKeyMappingCategoryCAW()
-{
-	// UKeyMappingCategoryCAW* CategoryWidget = CreateWidget<UKeyMappingCategoryCAW>(this, CategoryWidgetClass);
-	//
-	// if (CategoryWidget)
-	// {
-	// 	CategoryWidget->InitKeyMappingCategory(CategoryName, LastWidget);
-	// }
-}
-
 void UKeyMappingCategoryCAW::InitKeyMappingCategory(FText pKeyCategoryName, UWidget* pLastWidgetNav)
 {
 	KeyCategoryName = pKeyCategoryName;
 	LastWidgetNav = pLastWidgetNav;
+	if (KeyCategoryName.IsEmpty())
+	{
+		BIND_RebindInputCategory_VB->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		BIND_RebindInputCategory_VB->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
 }
 
 
@@ -74,6 +72,11 @@ void UKeyMappingCategoryCAW::AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping)
 			}
 		}
 	}
+}
+
+void UKeyMappingCategoryCAW::SetLastWidget(UWidget* pLastWidget)
+{
+	LastWidgetNav = pLastWidget;
 }
 
 void UKeyMappingCategoryCAW::CanAddNewKeyMapping()

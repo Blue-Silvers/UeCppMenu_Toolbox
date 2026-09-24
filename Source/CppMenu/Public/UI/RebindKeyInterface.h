@@ -29,6 +29,8 @@ public:
 	void UpdateAllKey(const TArray<FKey>& AllKey);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Rebind Key")
 	UInputKeySelector* GetKeySelector();
- 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Rebind Key")
+	UKeyMappingCAW* GetKeyMappingWidget();
+	
 	//UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Interface")
 };
