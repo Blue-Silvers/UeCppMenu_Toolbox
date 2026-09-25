@@ -67,13 +67,17 @@ void UKeyMappingMenuCAW::NativeConstruct()
 
 void UKeyMappingMenuCAW::OnResetAllControlsClicked()
 {
-	for (UKeyMappingCAW* eachKey : InputList)
+	TArray<UKeyMappingCAW*> InputListCopy = InputList;
+	for (UKeyMappingCAW* eachKey : InputListCopy)
 	{
-		if (eachKey->Implements<URebindKeyInterface>())
+		if (IsValid(eachKey) && eachKey->Implements<URebindKeyInterface>())
 		{
-			IRebindKeyInterface::Execute_ResetKey(eachKey);
+			IRebindKeyInterface::Execute_ResetKey(eachKey); // reset individuel (sans se soucier du rebuild répété)
 		}
 	}
+
+	// Un seul rebuild propre à la fin, sur l'état final
+	FindKeys(bRebindGamepad);
 }
 
 void UKeyMappingMenuCAW::OnKeyboardPageButtonClicked()
@@ -156,7 +160,7 @@ void UKeyMappingMenuCAW::AddKeyToScrollBox()
 	bRebindGamepad ? AllKeysGamepadMap.GetKeys(keyMappingInputAction) : AllKeysKeyboardMap.GetKeys(keyMappingInputAction);
 	for (const UInputAction* eachKey : keyMappingInputAction)
 	{
-		if (bRebindGamepad ? AllKeysGamepadMap.Find(eachKey) : AllKeysGamepadMap.Find(eachKey))
+		if (bRebindGamepad ? AllKeysGamepadMap.Find(eachKey) : AllKeysKeyboardMap.Find(eachKey))
 		{
 			AllKeysFounded.Add(bRebindGamepad ? AllKeysGamepadMap.Find(eachKey) : AllKeysKeyboardMap.Find(eachKey));
 		}
@@ -170,7 +174,7 @@ void UKeyMappingMenuCAW::AddKeyToScrollBox()
 			newInputWidgetRef->InitKeyMapping(FText::FromString((keyFounded->GetMappingName().ToString()
 																			.Replace(TEXT("Kb"), TEXT("")))
 																			.Replace(TEXT("Gp"), TEXT(""))), 
-																			*keyFounded, bRebindGamepad, InputUserSettings);
+																			keyFounded, bRebindGamepad, InputUserSettings);
 			if (!CategoryMap.Find(keyFounded->GetDisplayCategory().ToString()))
 			{
 				UKeyMappingCategoryCAW* newCategoryWidget = Cast<UKeyMappingCategoryCAW>(CreateWidget(GetOwningPlayer(), WidgetCategory));
@@ -182,7 +186,7 @@ void UKeyMappingMenuCAW::AddKeyToScrollBox()
 				if (index > 0)
 				{
 					newCategoryWidget->SetLastWidget(bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[index-1] : 
-																		BIND_Keyboard_SB->GetAllChildren()[index-1]);
+				 														BIND_Keyboard_SB->GetAllChildren()[index-1]);
 				}
 				UE_LOG(LogTemp, Warning, TEXT("Create New category"));
 			}

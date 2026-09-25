@@ -16,7 +16,7 @@ class CPPMENU_API UKeyMappingCAW : public UCommonActivatableWidget, public IRebi
 	GENERATED_BODY()
 
 public:
-	void InitKeyMapping(FText pKeyName, FPlayerKeyMapping pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings);
+	void InitKeyMapping(FText pKeyName, FPlayerKeyMapping* pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings);
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -43,8 +43,7 @@ protected:
 	//Initialize variables
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
 	FText KeyName;
-	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
-	FPlayerKeyMapping Key;
+	FPlayerKeyMapping* KeyRef;
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Key Mapping Settings")
 	bool RebindGamepadKey = false;
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")

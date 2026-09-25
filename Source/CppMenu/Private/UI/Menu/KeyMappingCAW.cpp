@@ -9,16 +9,16 @@
 #include "Styling/SlateColor.h"
 
 //Setrtings
+#include "CommonTextBlock.h"
 #include "Components/Image.h"
 
-void UKeyMappingCAW::InitKeyMapping(FText pKeyName, FPlayerKeyMapping pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings)
+void UKeyMappingCAW::InitKeyMapping(FText pKeyName, FPlayerKeyMapping* pKey, bool pRebindGamepadKey, UEnhancedInputUserSettings* pUserSettings)
 {
 	KeyName = pKeyName;
-	Key = pKey;
+	KeyRef = pKey;
 	RebindGamepadKey = pRebindGamepadKey;
 	UserSettings = pUserSettings;
-	UE_LOG(LogTemp, Warning, TEXT("init each widget"));
-
+	BIND_InputDisplayName_Text->SetText(KeyName);
 }
 
 void UKeyMappingCAW::NativeConstruct()
@@ -28,14 +28,15 @@ void UKeyMappingCAW::NativeConstruct()
 	//Bind key selector
 	if (BIND_InputSelector)
 	{
+		
 		BIND_InputSelector->OnKeySelected.AddUniqueDynamic(this, &UKeyMappingCAW::OnKeySelected);
 	}
 	
-	UpdateKey(Key.GetCurrentKey());
+	UpdateKey(KeyRef->GetCurrentKey());
 	BIND_InputSelector->SetAllowGamepadKeys(RebindGamepadKey);
-	if (Key.GetAssociatedInputAction())
+	if (KeyRef->GetAssociatedInputAction())
 	{
-		bMultidirectionalInput = Key.GetAssociatedInputAction()->ValueType == EInputActionValueType::Axis2D;
+		bMultidirectionalInput = KeyRef->GetAssociatedInputAction()->ValueType == EInputActionValueType::Axis2D;
 	}
 }
 
@@ -76,14 +77,14 @@ FKey UKeyMappingCAW::MultidirectionInputFunction(FKey pTempKey)
 void UKeyMappingCAW::OnKeySelected(FInputChord SelectedKey)
 {
 	FKey verifiedKey = MultidirectionInputFunction(SelectedKey.Key);
-	if (RebindGamepadKey && verifiedKey.GetDisplayName().ToString().Contains(TEXT("Gamepad")))
+	if ((RebindGamepadKey && verifiedKey.GetDisplayName().ToString().Contains(TEXT("Gamepad"))) || !RebindGamepadKey)
 	{
 		newKey = verifiedKey;
 		ApplyNewKey();
 	}
 	else
 	{
-		UpdateKey(Key.GetCurrentKey());
+		UpdateKey(KeyRef->GetCurrentKey());
 	}
 }
 
@@ -91,8 +92,9 @@ void UKeyMappingCAW::ApplyNewKey()
 {
 	UpdateKey(newKey);
 	FMapPlayerKeyArgs KeyArgs;
-	KeyArgs.MappingName = Key.GetMappingName();
-	KeyArgs.NewKey = newKey;
+	KeyArgs.MappingName = KeyRef->GetMappingName();
+	KeyRef->SetCurrentKey(newKey);
+	KeyArgs.NewKey = KeyRef->GetCurrentKey();
 	FGameplayTagContainer FailureReason;
 	UserSettings->MapPlayerKey(KeyArgs, FailureReason);
 	UserSettings->ApplySettings();
@@ -108,8 +110,8 @@ FText UKeyMappingCAW::GetKeyName_Implementation() const
 
 void UKeyMappingCAW::ResetKey_Implementation()
 {
-	newKey = Key.GetDefaultKey();
-	ApplyNewKey();
+	newKey = KeyRef->GetDefaultKey();
+	//ApplyNewKey();
 }
 
 void UKeyMappingCAW::UpdateAllKey_Implementation(const TArray<FKey>& AllKey)
@@ -117,14 +119,15 @@ void UKeyMappingCAW::UpdateAllKey_Implementation(const TArray<FKey>& AllKey)
 	iSameKeyCount = 0;
 	for (FKey eachKey : AllKey)
 	{
-		if (eachKey == Key.GetCurrentKey())
+		if (eachKey == KeyRef->GetCurrentKey())
 		{
 			++iSameKeyCount;
 		}
 	}
 	
 	FTextBlockStyle blockStyle;
-	FLinearColor newColorAndOpacity = iSameKeyCount > 1 ? FLinearColor(1,0,0,blockStyle.ColorAndOpacity.GetSpecifiedColor().A) : FLinearColor(1,1,1,blockStyle.ColorAndOpacity.GetSpecifiedColor().A);
+	FLinearColor newColorAndOpacity = iSameKeyCount > 1 ? FLinearColor(1,0,0,BIND_InputSelector->GetTextStyle().ColorAndOpacity.GetSpecifiedColor().A) : 
+															FLinearColor(1,1,1,BIND_InputSelector->GetTextStyle().ColorAndOpacity.GetSpecifiedColor().A);
 	blockStyle = BIND_InputSelector->GetTextStyle();
 	blockStyle.Font.OutlineSettings.OutlineColor.A = blockStyle.ColorAndOpacity.GetSpecifiedColor().A;
 	blockStyle.ColorAndOpacity = newColorAndOpacity;

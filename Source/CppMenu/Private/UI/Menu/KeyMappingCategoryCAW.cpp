@@ -3,6 +3,7 @@
 
 #include "UI/Menu/KeyMappingCategoryCAW.h"
 
+#include "CommonTextBlock.h"
 #include "UI/RebindKeyInterface.h"
 #include "Components/VerticalBox.h"
 
@@ -18,6 +19,7 @@ void UKeyMappingCategoryCAW::InitKeyMappingCategory(FText pKeyCategoryName, UWid
 	{
 		BIND_RebindInputCategory_VB->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
+	BIND_Category_Text->SetText(KeyCategoryName);
 }
 
 
@@ -50,27 +52,6 @@ void UKeyMappingCategoryCAW::AddNewKeyMapping(UKeyMappingCAW* NewKeyMapping)
 	if (bGateOpen)
 	{
 		BIND_InputList_VB->AddChild(NewKeyMapping);
-		const TArray<UWidget*>& widgets = BIND_InputList_VB->GetAllChildren();
-		if (widgets[widgets.Num() - 2])
-		{
-			NewKeyMapping->SetNavigationRuleExplicit(EUINavigation::Up, widgets[widgets.Num() - 2]);
-			widgets[widgets.Num() - 2]->SetNavigationRuleExplicit(EUINavigation::Down, NewKeyMapping);
-		}
-		else
-		{
-			if (widgets.Num() - 2 == 0)
-			{
-				UKeyMappingCategoryCAW* categoryWidget = Cast<UKeyMappingCategoryCAW>(LastWidgetNav);
-				UWidget* lastIndewWidget = categoryWidget->BIND_InputList_VB->GetAllChildren()[BIND_InputList_VB->GetAllChildren().Num() - 1];
-				NewKeyMapping->SetNavigationRuleExplicit(EUINavigation::Up, lastIndewWidget);
-				
-				//Double check (NEED REWORK)
-				if (lastIndewWidget->Implements<URebindKeyInterface>())
-				{
-					NewKeyMapping->SetNavigationRuleExplicit(EUINavigation::Up, IRebindKeyInterface::Execute_GetKeySelector(lastIndewWidget));
-				}
-			}
-		}
 	}
 }
 
