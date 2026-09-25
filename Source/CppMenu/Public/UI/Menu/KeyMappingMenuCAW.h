@@ -62,12 +62,11 @@ protected:
 	TArray<FKey> AllKeys;
 	TArray<FPlayerKeyMapping*> AllKeysFounded;
 	bool bRebindGamepad = false;
+	UMainCommonButtonBase* Controls_Button = nullptr;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
 	TSubclassOf<class UKeyMappingCategoryCAW> WidgetCategory = nullptr;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
 	TSubclassOf<class UKeyMappingCAW> WidgetKey = nullptr;
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Widget")
-	UMainCommonButtonBase* Controls_Button = nullptr;
 	//End of Other variables
 	
 	

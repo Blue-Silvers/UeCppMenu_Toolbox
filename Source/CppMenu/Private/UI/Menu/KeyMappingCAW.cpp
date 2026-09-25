@@ -17,6 +17,8 @@ void UKeyMappingCAW::InitKeyMapping(FText pKeyName, FPlayerKeyMapping pKey, bool
 	Key = pKey;
 	RebindGamepadKey = pRebindGamepadKey;
 	UserSettings = pUserSettings;
+	UE_LOG(LogTemp, Warning, TEXT("init each widget"));
+
 }
 
 void UKeyMappingCAW::NativeConstruct()
@@ -37,7 +39,7 @@ void UKeyMappingCAW::NativeConstruct()
 	}
 }
 
-void UKeyMappingCAW::UpdateKey(FKey pNewKey)
+void UKeyMappingCAW::UpdateKey_Implementation(FKey pNewKey)
 {
 	FInputChord newChord = pNewKey;
 	BIND_InputSelector->SetSelectedKey(newChord);
@@ -77,6 +79,7 @@ void UKeyMappingCAW::OnKeySelected(FInputChord SelectedKey)
 	if (RebindGamepadKey && verifiedKey.GetDisplayName().ToString().Contains(TEXT("Gamepad")))
 	{
 		newKey = verifiedKey;
+		ApplyNewKey();
 	}
 	else
 	{

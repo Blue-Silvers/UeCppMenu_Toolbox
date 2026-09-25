@@ -32,16 +32,21 @@ void UKeyMappingMenuCAW::NativeConstruct()
 	{
 		BIND_ResetAllControls_Button->OnButtonClicked.AddUniqueDynamic(this, &UKeyMappingMenuCAW::OnResetAllControlsClicked);
 	}
+	
+	Controls_Button = BIND_KeyboardPage_Button;
 
 	APlayerController* localPlayerController = GetOwningPlayer();
 	if (!localPlayerController)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Player Controller not found"));
 		return;
 	}
 
 	ULocalPlayer* localPlayer = localPlayerController->GetLocalPlayer();
 	if (!localPlayer)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Local Player not found"));
+
 		return;
 	}
 
@@ -50,6 +55,8 @@ void UKeyMappingMenuCAW::NativeConstruct()
 
 	if (!EnhancedInputSubsystem)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("EnhancedInputSubsystem not found"));
+
 		return;
 	}
 
@@ -93,6 +100,7 @@ void UKeyMappingMenuCAW::FindKeys(bool bIsGamepad)
 		{
 			for (FPlayerKeyMapping eachKeyMapping : eachKeyMappingRow.Mappings.Array())
 			{
+
 				if (eachKeyMapping.GetSlot() == EPlayerMappableKeySlot::First)
 				{
 					if (eachKeyMapping.GetDefaultKey().GetDisplayName().ToString().Contains(TEXT("Gamepad")))
@@ -155,7 +163,7 @@ void UKeyMappingMenuCAW::AddKeyToScrollBox()
 	}
 	for (FPlayerKeyMapping* keyFounded : AllKeysFounded)
 	{
-		UWidget* newInputWidget = CreateWidget(GetOwningPlayer(), WidgetCategory);
+		UWidget* newInputWidget = CreateWidget(GetOwningPlayer(), WidgetKey);
 		if (newInputWidget->Implements<URebindKeyInterface>())
 		{
 			UKeyMappingCAW* newInputWidgetRef = IRebindKeyInterface::Execute_GetKeyMappingWidget(newInputWidget);
@@ -169,12 +177,14 @@ void UKeyMappingMenuCAW::AddKeyToScrollBox()
 				newCategoryWidget->InitKeyMappingCategory(keyFounded->GetDisplayCategory(), Controls_Button);
 				CategoryMap.Add(keyFounded->GetDisplayCategory().ToString(), newCategoryWidget);
 				bRebindGamepad ? BIND_Gamepad_SB->AddChild(newCategoryWidget) : BIND_Keyboard_SB->AddChild(newCategoryWidget);
-				if (bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[BIND_Gamepad_SB->GetAllChildren().Find(newCategoryWidget)-1] : 
-									BIND_Keyboard_SB->GetAllChildren()[BIND_Keyboard_SB->GetAllChildren().Find(newCategoryWidget)-1])
+				int32 index = bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren().Find(newCategoryWidget): 
+									BIND_Keyboard_SB->GetAllChildren().Find(newCategoryWidget);
+				if (index > 0)
 				{
-					newCategoryWidget->SetLastWidget(bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[BIND_Gamepad_SB->GetAllChildren().Find(newCategoryWidget)-1] : 
-																		BIND_Keyboard_SB->GetAllChildren()[BIND_Keyboard_SB->GetAllChildren().Find(newCategoryWidget)-1]);
+					newCategoryWidget->SetLastWidget(bRebindGamepad ? BIND_Gamepad_SB->GetAllChildren()[index-1] : 
+																		BIND_Keyboard_SB->GetAllChildren()[index-1]);
 				}
+				UE_LOG(LogTemp, Warning, TEXT("Create New category"));
 			}
 			UKeyMappingCategoryCAW** tempCategoryWidget = CategoryMap.Find(keyFounded->GetDisplayCategory().ToString());
 			(*tempCategoryWidget)->AddNewKeyMapping(newInputWidgetRef);

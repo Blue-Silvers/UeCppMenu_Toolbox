@@ -23,8 +23,8 @@ protected:
 
 //Keybinding
 protected:
-	UFUNCTION(Blueprintable)
-	virtual void UpdateKey( FKey pNewKey);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Rebind Key")
+	void UpdateKey( FKey pNewKey);
 	FKey MultidirectionInputFunction( FKey pTempKey);
 	UFUNCTION()
 	void OnKeySelected(FInputChord pKey);
@@ -32,11 +32,11 @@ protected:
 
 protected:
 	//Binding
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UInputKeySelector> BIND_InputSelector = nullptr;
 	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<class UTextBlock> BIND_InputDisplayName_Text = nullptr;
-	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<class UCommonTextBlock> BIND_InputDisplayName_Text = nullptr;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidgetOptional))
 	TObjectPtr<class UImage> BIND_KeyPicture_Image = nullptr;
 	//End of Binding
 	
@@ -45,7 +45,7 @@ protected:
 	FText KeyName;
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
 	FPlayerKeyMapping Key;
-	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Key Mapping Settings")
 	bool RebindGamepadKey = false;
 	UPROPERTY(EditAnywhere, Category = "Key Mapping Settings")
 	UEnhancedInputUserSettings* UserSettings;
